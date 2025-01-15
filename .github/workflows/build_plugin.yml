@@ -1,0 +1,64 @@
+name: Build with JSBrains Dependencies
+
+on:
+  # push:
+  #   branches: [ main ]
+  # pull_request:
+  #   branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 检出当前仓库的代码
+      - name: Checkout current repository
+        uses: actions/checkout@v3
+        with:
+          path: obsidian-smart-connections
+
+      # 检出 JSBrains 仓库
+      - name: Checkout JSBrains repository
+        uses: actions/checkout@v3
+        with:
+          repository: cztchoice/jsbrains
+          path: jsbrains
+          token: ${{ secrets.PAT_TOKEN }}
+
+      # 设置 Node.js 环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # 构建 smart-view
+      - name: Build smart-view
+        working-directory: ./jsbrains/smart-view
+        run: |
+          npm install
+          npm run build
+
+      # 构建 smart-rank-model
+      - name: Build smart-rank-model
+        working-directory: ./jsbrains/smart-rank-model
+        run: |
+          npm install
+          npm run build
+
+      # 构建 smart-embed-model
+      - name: Build smart-embed-model
+        working-directory: ./jsbrains/smart-embed-model
+        run: |
+          npm install
+          npm run build
+
+      # 构建主仓库
+      - name: Build main repository
+        working-directory: ./obsidian-smart-connections
+        env:
+          DEFAULT_OPEN_ROUTER_API_KEY: "test"
+        run: |
+          npm install
+          npm run build
